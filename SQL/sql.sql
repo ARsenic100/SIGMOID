@@ -1259,4 +1259,352 @@ select deptno from emp
 group by deptno
 having count(*) > 3;
 -- Calculate the number of months each employee has worked.
+SELECT ename, TIMESTAMPDIFF(MONTH, hiredate, CURDATE()) AS months_worked
+FROM emp;
+
+-- notebook 11
+
+Exploring EMP and DEPT Tables
+Check the structure and row count of EMP and DEPT tables.
+
+
+DESC emp;
+     
+
+SELECT * FROM emp;
+     
+
+SELECT COUNT(*) FROM emp;
+     
+
+DESC dept;
+     
+
+SELECT * FROM dept;
+     
+
+SELECT COUNT(*) FROM dept;
+     
+Cartesian Join
+Joining EMP and DEPT without a condition returns every possible combination of rows.
+
+
+SELECT ename, sal, dname, loc FROM emp, dept;
+     
+Cross Join
+Ansi Cross Join
+
+SELECT e.empno, e.ename, d.deptno, d.dname FROM emp AS e CROSS JOIN dept AS d;
+
+Ambiguous Column Reference
+
+SELECT ename, sal, deptno, dname, loc FROM emp, dept; -- Fails
+     
+
+SELECT ename, sal, dept.deptno, dname, loc FROM emp, dept;
+     
+Using Aliases
+Aliases make queries shorter and clearer.
+
+
+SELECT e.ename, e.sal, d.deptno, d.dname, d.loc FROM emp e, dept d;
+     
+Equi Join / Inner Join
+Select employees with their departments where DEPTNO matches.
+
+
+SELECT e.ename, e.sal, d.deptno, d.dname, d.loc FROM emp e, dept d WHERE e.deptno = d.deptno;
+     
+
+SELECT e.ename, e.sal, d.deptno, d.dname, d.loc FROM emp e JOIN dept d ON e.deptno = d.deptno;
+     
+Employees in Chicago
+Select employees who work in Chicago.
+
+
+SELECT e.ename, d.loc FROM emp e JOIN dept d ON e.deptno = d.deptno WHERE d.loc = 'CHICAGO';
+     
+Employee - Manager Relationship
+Use a self join on EMP to display employee name and their manager name.
+
+
+SELECT e1.ename AS employee, e2.ename AS manager FROM emp e1 JOIN emp e2 ON e1.mgr = e2.empno;
+     
+Select employees whose salary is higher than their managers.
+
+
+SELECT e1.ename AS employee_name, e1.sal AS employee_salary,
+       e2.ename AS manager_name, e2.sal AS manager_salary 
+FROM emp e1
+JOIN emp e2 ON e1.mgr = e2.empno
+WHERE e1.sal > e2.sal;
+     
+Employees Above Average Salary
+Compare salaries against the average salary using subqueries.
+
+
+SELECT AVG(sal) FROM emp;
+     
+
+SELECT * FROM emp WHERE sal > (SELECT AVG(sal) FROM emp);
+     
+
+SELECT e.ename, e.sal
+FROM emp e
+JOIN (SELECT AVG(sal) AS avg_sal FROM emp) a
+  ON e.sal > a.avg_sal;
+     
+Non-Equi Joins and Outer Joins with Sample Tables
+Create sample tables T1 and T2 to demonstrate join types.
+
+
+CREATE TABLE t1(a VARCHAR(10), b VARCHAR(10), c VARCHAR(10));
+INSERT INTO t1 VALUES('x', 'y', 'z');
+INSERT INTO t1 VALUES('p', 'q', 'r');
+
+CREATE TABLE t2(a VARCHAR(10), b VARCHAR(10));
+INSERT INTO t2 VALUES('x', 'y');
+INSERT INTO t2 VALUES('u', 'v');
+     
+
+SELECT * FROM t1;
+     
+
+SELECT * FROM t2;
+     
+Inner Join
+Return only rows with matching values in both tables.
+
+
+SELECT * FROM t1 JOIN t2 ON t1.a = t2.a;
+     
+Left Join
+Return all rows from T1 and matching rows from T2.
+
+
+SELECT * FROM t1 LEFT JOIN t2 ON t1.a = t2.a;
+     
+Left Outer Join
+Same as LEFT JOIN, explicitly using the OUTER keyword.
+
+
+SELECT * FROM t1 LEFT OUTER JOIN t2 ON t1.a = t2.a;
+     
+Right Join
+Return all rows from T2 and matching rows from T1.
+
+
+SELECT * FROM t1 RIGHT JOIN t2 ON t1.a = t2.a;
+     
+Right Outer Join
+Same as RIGHT JOIN, explicitly using the OUTER keyword.
+
+
+SELECT * FROM t1 RIGHT OUTER JOIN t2 ON t1.a = t2.a;
+     
+Full Join
+Return rows when there is a match in either table.
+
+
+SELECT * FROM t1 FULL JOIN t2 ON t1.a = t2.a; -- Might fail on MySQL
+     
+
+SELECT *
+FROM t1
+LEFT JOIN t2 ON t1.a = t2.a
+
+UNION
+
+SELECT *
+FROM t1
+RIGHT JOIN t2 ON t1.a = t2.a;
+
+     
+Inline Views and ROWNUM
+
+SELECT ename, sal, sal*12 annual_salary FROM emp WHERE annual_salary > 30000;
+     
+ROWNUM Basics
+ROWNUM generates sequential numbers for rows in the result set.
+
+
+SELECT 
+    ROW_NUMBER() OVER (ORDER BY ename) AS rownum,
+    ename
+FROM emp;
+     
+Assigns a unique, sequential number to each row regardless of ties
+
+SELECT ROW_NUMBER() OVER (ORDER BY sal) AS rownum, sal, ename FROM emp;
+
+Ranks with gaps after ties. Tied values get the same rank, and the next rank is skipped.
+
+
+SELECT 
+    RANK() OVER (ORDER BY sal) AS rownum,
+    sal, ename
+FROM emp;
+     
+Ranks without gaps. Tied values get the same rank, and the next rank is consecutive
+
+
+SELECT 
+    DENSE_RANK() OVER (ORDER BY sal) AS rownum,
+    sal, ename
+FROM emp;
+     
+
+-- notebook 12
+-- Retail Database – Analytical Questions
+-- Question 1: Identify Peak Order Dates
+select order_date, count(*) as total_ord 
+from orders
+group by order_date
+order by total_ord desc
+limit 1;
+
+
+-- Question 2: Find Dates with High Order Volume (> 120)
+select order_date, count(*) as total_ord from orders
+group by order_date
+having total_ord > 120;
+-- Question 3: Compute Revenue for the Second Order ID
+select round(sum(order_item_subtotal) , 2)
+from order_items
+where order_item_order_id = 2;
+
+-- Question 4: Compute Revenue per Order
+SELECT
+  oi.order_item_order_id AS order_id,
+  SUM(oi.order_item_subtotal) AS order_revenue
+FROM order_items oi
+GROUP BY order_id
+ORDER BY order_id;
+
+
+-- Question 5: Produce Monthly Order Count for Reporting
+SELECT
+  DATE_FORMAT(o.order_date, '%Y-%m') AS order_month,
+  COUNT( o.order_id) AS order_count
+FROM orders o
+GROUP BY order_month
+ORDER BY order_month;
+
+-- notebook 14
+
+
+-- Working with VIEWS in MySQL
+-- Base Table
+-- PreRequisite:
+-- The table emp exists and contains employee data such as:
+
+-- empno
+-- ename
+-- sal
+-- deptno
+
+SELECT * FROM emp;
+     
+-- Simple View with Filtering
+-- HR frequently queries employees belonging to Department 20. Instead of rewriting the filter each time, a reusable object is required.
+
+-- A VIEW stores a SELECT query definition. It behaves like a virtual table and always reflects current data from the base table.
+
+
+CREATE OR REPLACE VIEW deptno20 AS
+SELECT *
+FROM emp
+WHERE deptno = 20;
+     
+
+SELECT * FROM deptno20;
+     
+-- DML Through a View (Insert)
+-- HR wants to insert new employees directly into the department-specific view.
+
+-- Concept
+-- In MySQL, a view is updatable if:
+
+-- It is based on a single table
+-- It does not use GROUP BY, DISTINCT, aggregates, or joins
+-- DML executed on such a view affects the base table.
+
+
+INSERT INTO deptno20 VALUES 
+(9000,'ARJUN','NAYAK',7782,'1982-01-23',1300.00,NULL,20);
+     
+
+SELECT * FROM deptno20;
+     
+-- 3. Aggregate View
+-- Business Use Case
+-- Management wants to see employee count per department.
+
+-- Concept
+-- Views that use:
+
+-- GROUP BY
+-- Aggregate functions
+-- are read-only in MySQL. They are used purely for reporting.
+
+
+CREATE OR REPLACE VIEW count_per_dept AS
+SELECT deptno, COUNT(*) AS cnt
+FROM emp
+GROUP BY deptno;
+     
+
+SELECT * FROM count_per_dept;
+     
+-- View Definition Metadata
+-- MySQL stores view metadata in INFORMATION_SCHEMA.VIEWS.
+
+
+SELECT view_definition
+FROM information_schema.views
+WHERE table_schema = DATABASE()
+  AND table_name = 'count_per_dept';
+     
+-- 5. View with Subquery
+-- HR wants a reusable dataset showing employees earning above the company average salary.
+
+-- Views can encapsulate complex logic including:
+
+-- Subqueries
+-- Derived tables
+-- This improves reuse and consistency.
+
+
+CREATE OR REPLACE VIEW emp_above_avg_sal AS
+SELECT e.ename, e.sal
+FROM emp e
+JOIN (
+    SELECT AVG(sal) AS avg_sal
+    FROM emp
+) a
+ON e.sal > a.avg_sal;
+     
+
+SELECT * FROM emp_above_avg_sal;
+     
+-- Inspecting View Definition
+
+SELECT view_definition
+FROM information_schema.views
+WHERE table_schema = DATABASE()
+  AND table_name = 'emp_above_avg_sal';
+     
+-- Listing All Views in the Database
+-- MySQL exposes all view metadata through INFORMATION_SCHEMA.VIEWS.
+
+
+SELECT table_name
+FROM information_schema.views
+WHERE table_schema = DATABASE();
+     
+
+     
+
+
+
 
