@@ -1,0 +1,8 @@
+print(bool(0))
+print(bool(1))
+print(bool(10))
+print(bool(0.0))
+print(bool(10+5j))
+print(bool("True"))
+print(bool("False"))
+print(bool(""))

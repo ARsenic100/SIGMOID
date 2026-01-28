@@ -1,0 +1,8 @@
+Insurance Premium Simulation Report
+Run Date and Time: 2026-01-24 20:21:05
+----------------------------------------
+Total Premium Collected:   ₹1,903,287,662.29
+Highest Premium Paid:      ₹543,042.28
+Lowest Premium Paid:       ₹215,785.64
+Average Premium per User:  ₹380,657.53
+----------------------------------------

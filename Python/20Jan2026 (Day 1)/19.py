@@ -1,0 +1,6 @@
+print(complex(10))
+print(complex(10.7))
+print(complex("10"))
+print(complex("10.6"))
+print(complex(10, 5))
+print(complex(10, -3))
