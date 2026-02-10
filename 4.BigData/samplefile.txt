@@ -1,0 +1,5 @@
+Welcome to Spark
+welcome to spark
+Welcome to AWS
+Learning SQL and Python is Fun
+Learning Spark is Fun
