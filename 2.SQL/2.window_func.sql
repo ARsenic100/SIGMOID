@@ -311,7 +311,8 @@ FROM sales;
      
 -- Monthly total (basic aggregation)
 
-SELECT
+SELECT9835
+
   DATE_FORMAT(order_date, '%Y-%m') AS order_month,
   SUM(amount) AS monthly_total
 FROM sales
